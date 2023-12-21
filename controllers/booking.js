@@ -32,7 +32,7 @@ const BookingController = {
                         checkInDate: checkInDate,
                         checkOutDate: checkOutDate,
                         room: room
-                    })
+                    });
 
                     const response = await BookingDatabase.createBooking(newobj);
 
