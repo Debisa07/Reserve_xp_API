@@ -8,8 +8,9 @@ const Flight = require('./models/flightModels')
 const Space = require('./models/spaceModels')
 const Tour = require('./models/tourModels');
 const bodyParser = require('body-parser');
-const Booking  = require('./models/bookingModels');
+const Booking = require('./models/bookingModels');
 const Room = require('./models/roomModels');
+const Roomrouter = require('./routes/rooms');
 
 
 
@@ -19,7 +20,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json())
-app.getMaxListeners('/', (req, res)=>{
+app.getMaxListeners('/', (req, res) => {
     res.send("Hello Node API")
 
 })
@@ -248,7 +249,7 @@ app.delete("/events/:id", async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 });
-      
+
 
 
 // GET all boats
@@ -323,8 +324,8 @@ app.delete("/boats/:id", async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 });
-        
-    
+
+
 
 // GET all cars
 app.get("/cars", async (req, res) => {
@@ -405,16 +406,16 @@ app.listen(4000, () => {
     console.log("Node API app is running on Port 4000");
 });
 
-app.get("/hotel", async(req, res)=>{
+app.get("/hotel", async (req, res) => {
     // console.log(req.body)
     // res.send(req.body)
-    try{
+    try {
         const newHotels = await Hotel.find({})
         res.status(200).json(newHotels)
     }
-    catch(error){
+    catch (error) {
         console.log(error.message);
-        res.status(500).json({message: error.message})
+        res.status(500).json({ message: error.message })
     }
 })
 app.get("/hotel/:id", async (req, res) => {
@@ -435,16 +436,16 @@ app.get("/hotel/:id", async (req, res) => {
     }
 });
 
-app.post("/hotel", async(req, res)=>{
+app.post("/hotel", async (req, res) => {
     // console.log(req.body)
     // res.send(req.body)
-    try{
+    try {
         const newHotel = await Hotel.create(req.body)
         res.status(200).json(newHotel)
     }
-    catch(error){
+    catch (error) {
         console.log(error.message);
-        res.status(500).json({message: error.message})
+        res.status(500).json({ message: error.message })
     }
 })
 
@@ -484,37 +485,19 @@ app.post("/tour", async (req, res) => {
     }
 });
 mongoose.
-connect("mongodb+srv://tinsaebirhan7:D9EubbEi5lJpDCW1@cluster0.ovqcrvw.mongodb.net/ReserveXP?retryWrites=true&w=majority")
-.then(()=> {
-    app.getMaxListeners('/blog', (req, res)=>{
-        res.send("Hello Node API")
-    
+    connect("mongodb+srv://tinsaebirhan7:D9EubbEi5lJpDCW1@cluster0.ovqcrvw.mongodb.net/ReserveXP?retryWrites=true&w=majority")
+    .then(() => {
+        app.getMaxListeners('/blog', (req, res) => {
+            res.send("Hello Node API")
+
+        })
+        console.log("connected to mongo")
+    }).catch((error) => {
+        console.log(error)
     })
-    console.log("connected to mongo")
-}).catch((error)=> {
-    console.log(error)
-})
 
 // CREATE a new booking for a room
-app.post("/rooms/:id/bookings", async (req, res) => {
-    try {
-        const { id } = req.params;
-        const room = await Room.findById(id);
-
-        if (!room) {
-            return res.status(404).json({ message: "Room not found" });
-        }
-
-        const newBooking = await Booking.create(req.body);
-        room.bookings.push(newBooking);
-        await room.save();
-
-        res.status(200).json(newBooking);
-    } catch (error) {
-        console.log(error.message);
-        res.status(500).json({ message: error.message });
-    }
-});
+app.use("/rooms", Roomrouter);
 
 // GET all bookings for a room
 app.get("/rooms/:id/bookings", async (req, res) => {
@@ -576,8 +559,8 @@ app.put("/rooms/:id/bookings/:bookingId", async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
-    
-    );
+
+);
 
 // DELETE a booking for a room by ID
 app.delete("/rooms/:id/bookings/:bookingId", async (req, res) => {
@@ -598,8 +581,8 @@ app.delete("/rooms/:id/bookings/:bookingId", async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
-    
-    );
+
+);
 
 // GET all bookings
 app.get("/bookings", async (req, res) => {
@@ -706,18 +689,18 @@ app.get("/rooms/:id", async (req, res) => {
 });
 
 // CREATE a new room
-app.post("/rooms", async (req, res) => {
-    try {
-        const newRoom = await Room.create(req.body);
-        res.status(201).json(newRoom);
-    } catch (error) {
-        console.log(error.message);
-        res.status(500).json({ message: error.message });
-    }
-});
+// app.post("/rooms", async (req, res) => {
+//     try {
+//         const newRoom = await Room.create(req.body);
+//         res.status(201).json(newRoom);
+//     } catch (error) {
+//         console.log(error.message);
+//         res.status(500).json({ message: error.message });
+//     }
+// });
 
 // UPDATE a room by ID
-    
+
 app.put("/rooms/:id", async (req, res) => {
     try {
         const { id } = req.params;
@@ -752,7 +735,7 @@ app.delete("/rooms/:id", async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
-        
-        );
+
+);
 
 
