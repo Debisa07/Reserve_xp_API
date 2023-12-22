@@ -179,5 +179,4 @@ Roomrouter.delete("/:id/bookings/:bookingId", async (req, res) => {
 // );
 
 
-
 module.exports = Roomrouter;
