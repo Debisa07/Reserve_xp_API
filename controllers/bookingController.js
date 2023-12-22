@@ -58,7 +58,18 @@ const BookingController = {
     updateBookingById: async (req, res) => {
         try {
             const { id } = req.params;
+            const oldBooking = await Booking.findById(id);
+            if(req.body.roomId != oldBooking.RoomId){
+                await Room.findByIdAndUpdate(oldBooking.RoomId, {
+                            isAvailable: true
+                    })
+            }
             const updatedBooking = await Booking.findByIdAndUpdate(id, req.body, { new: true });
+            if(req.body.roomId != oldBooking.RoomId){
+                await Room.findByIdAndUpdate(req.body.roomId, {
+                            isAvailable: false
+                    })
+            }
 
             if (!updatedBooking) {
                 return res.status(404).json({ message: "Booking not found" });
@@ -76,6 +87,10 @@ const BookingController = {
         try {
             const { id } = req.params;
             const deletedBooking = await Booking.findByIdAndDelete(id);
+
+            await Room.findByIdAndUpdate(RoomId, {
+                            isAvailable: true
+                    })
 
             if (!deletedBooking) {
                 return res.status(404).json({ message: "Booking not found" });
