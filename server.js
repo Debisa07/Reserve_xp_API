@@ -1,8 +1,6 @@
 const express = require('express')
 const { default: mongoose } = require('mongoose')
 
-const Booking = require('./models/bookingModels');
-
 
 const flightRoutes = require('./routes/flight');
 const spaceRoutes = require('./routes/space');
@@ -51,8 +49,3 @@ mongoose.
     }).catch((error) => {
         console.log(error)
     })
-
-
-
-
-// GET all bookings
