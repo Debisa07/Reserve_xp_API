@@ -35,6 +35,9 @@ const BookingController = {
                     });
 
                     const response = await BookingDatabase.createBooking(newobj);
+                    await Room.findByIdAndUpdate(RoomId, {
+                            isAvailable: false
+                    })
 
                 }
 
