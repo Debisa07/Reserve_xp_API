@@ -88,7 +88,7 @@ const BookingController = {
             const { id } = req.params;
             const deletedBooking = await Booking.findByIdAndDelete(id, { new: true } );
 
-            await Room.findByIdAndUpdate(deletedBooking.RoomId, {
+            await Room.findByIdAndUpdate(deletedBooking.roomId, {
                             isAvailable: true
                     })
 
