@@ -11,7 +11,7 @@ const carRoutes = require('./routes/car');
 const boatRoutes = require('./routes/boat');
 const hotelRoutes = require('./routes/hotel');
 const roomRoutes = require('./routes/room');
-
+const bookingRoutes = require('./routes/booking');
 
 const cors = require('cors');
 const app = express();
@@ -30,7 +30,7 @@ app.use('/', carRoutes);
 app.use('/', boatRoutes);
 app.use('/', hotelRoutes);
 app.use("/", roomRoutes);
-
+app.use("/", bookingRoutes);
 
 
 
@@ -56,77 +56,3 @@ mongoose.
 
 
 // GET all bookings
-app.get("/bookings", async (req, res) => {
-    try {
-        const bookings = await Booking.find({});
-        res.status(200).json(bookings);
-    } catch (error) {
-        console.log(error.message);
-        res.status(500).json({ message: error.message });
-    }
-});
-
-// GET a single booking by ID
-app.get("/bookings/:id", async (req, res) => {
-    try {
-        const { id } = req.params;
-        const booking = await Booking.findById(id);
-
-        if (!booking) {
-            return res.status(404).json({ message: "Booking not found" });
-        }
-
-        res.status(200).json(booking);
-    } catch (error) {
-        console.log(error.message);
-        res.status(500).json({ message: error.message });
-    }
-});
-
-// CREATE a new booking
-app.post("/bookings", async (req, res) => {
-    try {
-        const newBooking = await Booking.create(req.body);
-        res.status(201).json(newBooking);
-    } catch (error) {
-        console.log(error.message);
-        res.status(500).json({ message: error.message });
-    }
-});
-
-// UPDATE a booking by ID
-app.put("/bookings/:id", async (req, res) => {
-    try {
-        const { id } = req.params;
-        const updatedBooking = await Booking.findByIdAndUpdate(id, req.body, { new: true });
-
-        if (!updatedBooking) {
-            return res.status(404).json({ message: "Booking not found" });
-        }
-
-        res.status(200).json(updatedBooking);
-    } catch (error) {
-        console.log(error.message);
-        res.status(500).json({ message: error.message });
-    }
-});
-
-// DELETE a booking by ID
-app.delete("/bookings/:id", async (req, res) => {
-    try {
-        const { id } = req.params;
-        const deletedBooking = await Booking.findByIdAndDelete(id);
-
-        if (!deletedBooking) {
-            return res.status(404).json({ message: "Booking not found" });
-        }
-
-        res.status(200).json({ message: "Booking deleted successfully" });
-    } catch (error) {
-        console.log(error.message);
-        res.status(500).json({ message: error.message });
-    }
-});
-
-
-
