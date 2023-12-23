@@ -1,87 +1,172 @@
-const Boat = require('../models/boatModels.js');
+const express = require('express');
+const Room = require('../models/roomModels');
+const BookingDatabase = require('../database/DatabaseBooking');
 
-// GET all Boats
-const getAllBoats = async (req, res) => {
-    try {
-        const boats = await Boat.find({});
-        res.status(200).json(boats);
-    } catch (error) {
-        console.log(error.message);
-        res.status(500).json({ message: error.message });
-    }
-};
+// Define the Booking controller object
+const BookingController = {
+    // Method to create a new booking
+    createBooking: async (req, res) => {
+        try {
+            const body = req.body;
+            const RoomId = body.roomId;
+            const carID = body.carId;
+            const drivername = body.driverName;
+            const guestName = body.guestName;
+            const checkInDate = body.checkInDate;
+            const checkOutDate = body.checkOutDate;
+            const room = await Room.findById(RoomId);
 
-// GET a single boat by ID
-const getBoatById = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const boat = await Boat.findById(id);
+            if(!car){
+                return res.status(404).json({ message: "Car not found" });
+            }
+            else{
+                const hasbeenbooked = await BookingDatabase.getBookingBycarId(carID);
 
-        if (!boat) {
-            return res.status(404).json({ message: "Boat not found" });
+                if(hasbeenbooked){
+                    res.status(200).json({ message: "reserved" });
+                }
+                else{
+                    const newobj = Object.assign({}, {
+                        carId: carID,
+                        driverName: drivername,
+                        guestName: guestName,
+                        checkInDate: checkInDate,
+                        checkOutDate: checkOutDate,
+                        car: car
+                    });
+
+                    const response = await BookingDatabase.createBooking(newobj);
+                    await Car.findByIdAndUpdate(carID, {
+                            isAvailable: false
+                    })
+                }
+            }
+
+
+            if (!room) {
+                return res.status(404).json({ message: "Room not found" });
+            }
+            else {
+
+                const hasbeenbooked = await BookingDatabase.getBookingByroomId(RoomId);
+
+                if (hasbeenbooked) {
+                    res.status(200).json({ message: "reserved" });
+                }
+                else {
+
+                    const newobj = Object.assign({}, {
+                        RoomId: RoomId,
+                        guestName: guestName,
+                        checkInDate: checkInDate,
+                        checkOutDate: checkOutDate,
+                        room: room
+                    });
+
+                    const response = await BookingDatabase.createBooking(newobj);
+                    await Room.findByIdAndUpdate(RoomId, {
+                            isAvailable: false
+                    })
+
+                }
+
+            }
+        } catch (error) {
+            console.log(error.message);
+            res.status(500).json({ message: error.message });
         }
+    },
 
-        res.status(200).json(boat);
-    } catch (error) {
-        console.log(error.message);
-        res.status(500).json({ message: error.message });
-    }
-};
+    // UPDATE a booking by ID
+    updateBookingById: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const oldBooking = await Booking.findById(id);
+            if(req.body.carId != oldBooking.carId){
+                await Car.findByIdAndUpdate(oldBooking.carId, {
+                            isAvailable: true
+                    })
+            }
+            if(req.body.roomId != oldBooking.RoomId){
+                await Room.findByIdAndUpdate(oldBooking.RoomId, {
+                            isAvailable: true
+                    })
+            }
 
-// CREATE a new boat
-const createBoat = async (req, res) => {
-    try {
-        const newBoat = await Boat.create(req.body);
-        res.status(201).json(newBoat);
-    } catch (error) {
-        console.log(error.message);
-        res.status(500).json({ message: error.message });
-    }
-};
+            const updatedBooking = await Booking.findByIdAndUpdate(id, req.body, { new: true });
+            if(req.body.carId != oldBooking.carId){
+                await Car.findByIdAndUpdate(req.body.carId, {
+                            isAvailable: false
+                    })
+            }
+            if(req.body.roomId != oldBooking.RoomId){
+                await Room.findByIdAndUpdate(req.body.roomId, {
+                            isAvailable: false
+                    })
+            }
 
-// UPDATE a boat by ID
-const updateBoatById = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const updatedBoat = await Boat.findByIdAndUpdate(id, req.body, { new: true });
+            if (!updatedBooking) {
+                return res.status(404).json({ message: "Booking not found" });
+            }
 
-        if (!updatedBoat) {
-            return res.status(404).json({ message: "Boat not found" });
+            res.status(200).json(updatedBooking);
+        } catch (error) {
+            console.log(error.message);
+            res.status(500).json({ message: error.message });
         }
+    },
 
-        res.status(200).json(updatedBoat);
-    } catch (error) {
-        console.log(error.message); // Add this line to log the error message
-        res.status(500).json({ message: error.message });
-    }
-};
+    // DELETE a booking by ID
+    deleteBookingById: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const deletedBooking = await Booking.findByIdAndDelete(id, { new: true } );
 
-// DELETE a boat by ID
-const deleteBoatById = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const deletedBoat = await Boat.findByIdAndDelete(id);
+            await Room.findByIdAndUpdate(deletedBooking.roomId, {
+                            isAvailable: true
+                    })
 
-        if (!deletedBoat) {
-            return res.status(404).json({ message: "Boat not found" });
+            if (!deletedBooking) {
+                return res.status(404).json({ message: "Booking not found" });
+            }
+
+            res.status(200).json({ message: "Booking deleted successfully" });
+        } catch (error) {
+            console.log(error.message);
+            res.status(500).json({ message: error.message });
         }
+    },
 
-        res.status(200).json({ message: "Boat deleted successfully" });
-    } catch (error) {
-        console.log(error.message);
-        res.status(500).json({ message: error.message });
-    }
+    // GET all bookings
+    getAllBookings: async (req, res) => {
+        try {
+            const bookings = await Booking.find();
+            res.status(200).json(bookings);
+        } catch (error) {
+            console.log(error.message);
+            res.status(500).json({ message: error.message });
+        }
+    },
+
+    // GET a single booking by ID
+    getBookingById: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const booking = await Booking.findById(id);
+
+            if (!booking) {
+                return res.status(404).json({ message: "Booking not found" });
+            }
+
+            res.status(200).json(booking);
+        } catch (error) {
+            console.log(error.message);
+            res.status(500).json({ message: error.message });
+        }
+    },
+
 };
 
-module.exports = {
-    getAllBoats,
-    getBoatById,
-    createBoat,
-    updateBoatById,
-    deleteBoatById,
-};
+module.exports = BookingController;
 
-
-
-
-
+const Booking = require('../models/bookingModels.js');
