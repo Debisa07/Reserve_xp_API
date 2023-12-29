@@ -1,19 +1,23 @@
 const express = require('express');
-const Room = require('../models/roomModels');
-const BookingDatabase = require('../database/DatabaseBooking');
+const Room = require('../../models/roomModels.js');
+const BookingDatabase = require('../../database/DatabaseBooking.js');
 
 // Define the Booking controller object
 const BookingController = {
     // Method to create a new booking
-    createBooking: async (req, res) => {
+    createBookingRoom: async (req, res) => {
         try {
             const body = req.body;
+
+            const booking_Type = body.booking_Type;
+
             const RoomId = body.roomId;
-            
+
             const guestName = body.guestName;
             const checkInDate = body.checkInDate;
             const checkOutDate = body.checkOutDate;
             const room = await Room.findById(RoomId);
+            console.log({ room });
 
             if (!room) {
                 return res.status(404).json({ message: "Room not found" });
@@ -32,13 +36,11 @@ const BookingController = {
                         guestName: guestName,
                         checkInDate: checkInDate,
                         checkOutDate: checkOutDate,
-                        room: room
                     });
-                    
 
                     const response = await BookingDatabase.createBooking(newobj);
                     await Room.findByIdAndUpdate(RoomId, {
-                            isAvailable: false
+                        isAvailable: false
                     })
 
                 }
@@ -55,16 +57,16 @@ const BookingController = {
         try {
             const { id } = req.params;
             const oldBooking = await Booking.findById(id);
-            if(req.body.roomId != oldBooking.RoomId){
+            if (req.body.roomId != oldBooking.RoomId) {
                 await Room.findByIdAndUpdate(oldBooking.RoomId, {
-                            isAvailable: true
-                    })
+                    isAvailable: true
+                })
             }
             const updatedBooking = await Booking.findByIdAndUpdate(id, req.body, { new: true });
-            if(req.body.roomId != oldBooking.RoomId){
+            if (req.body.roomId != oldBooking.RoomId) {
                 await Room.findByIdAndUpdate(req.body.roomId, {
-                            isAvailable: false
-                    })
+                    isAvailable: false
+                })
             }
 
             if (!updatedBooking) {
@@ -82,11 +84,11 @@ const BookingController = {
     deleteBookingById: async (req, res) => {
         try {
             const { id } = req.params;
-            const deletedBooking = await Booking.findByIdAndDelete(id, { new: true } );
+            const deletedBooking = await Booking.findByIdAndDelete(id, { new: true });
 
             await Room.findByIdAndUpdate(deletedBooking.roomId, {
-                            isAvailable: true
-                    })
+                isAvailable: true
+            })
 
             if (!deletedBooking) {
                 return res.status(404).json({ message: "Booking not found" });
@@ -131,4 +133,4 @@ const BookingController = {
 
 module.exports = BookingController;
 
-const Booking = require('../models/bookingModels.js');
+const Booking = require('../../models/Booking/bookingModels.js');
